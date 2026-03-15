@@ -4,37 +4,106 @@ const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    let { name, email, password, role, restaurantName, restaurantCode } = req.body;
 
+    // Normalizar datos
+    name = name?.trim();
+    email = email?.trim().toLowerCase();
+    role = role?.trim().toLowerCase();
+    
     // Validaciones básicas
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Nombre, email y password son obligatorios' });
     }
 
+    if (password.length < 8) {
+      return res.status(400).json({error: 'La contraseña debe tener al menos 8 caracteres'});
+    }
+
+    if (role && !['client', 'admin'].includes(role)) {
+      return res.status(400).json({error: 'El rol enviado no es válido'});
+    }
+    
     // Verificar si el usuario ya existe
     const existingUser = await userModel.findUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'El email ya está registrado' });
     }
 
-    // Crear usuario (por defecto role 'client' si no se especifica)
-    const newUser = await userModel.createUser(name, email, password, role || 'client');
-    
-    // Generar token JWT
+    // Por defecto, cualquier registro nuevo será cliente
+    let finalRole = 'client';
+    let restaurantId = null;
+
+    // Si intenta registrarse como admin, validar local + código del local
+    if (role === 'admin') {
+      if (!restaurantName || !restaurantCode) {
+        return res.status(400).json({
+          error: 'Para registrarse como administrador debe indicar el local y su código de seguridad'});
+      }
+
+      const restaurant = await userModel.findRestaurantByName(restaurantName.trim());
+
+      if (!restaurant) {
+        return res.status(404).json({
+          error: 'El local indicado no existe'});
+      }
+
+      // Comparar el código ingresado con el hash guardado del local
+      const codeMatches = await bcrypt.compare(
+        restaurantCode,
+        restaurant.admin_code_hash);
+
+      if (!codeMatches) {
+        return res.status(401).json({
+          error: 'El código de seguridad del local es incorrecto'});
+      }
+
+      // Evitar que el mismo local tenga varios admins si así lo quieren manejar
+      const restaurantAlreadyHasAdmin = await userModel.findAdminByRestaurantId(restaurant.id);
+
+      if (restaurantAlreadyHasAdmin) {
+        return res.status(409).json({
+          error: 'Ese local ya tiene un administrador registrado'});
+      }
+
+      finalRole = 'admin';
+      restaurantId = restaurant.id;
+    }
+
+    const newUser = await userModel.createUser(
+      name,
+      email,
+      password,
+      finalRole,
+      restaurantId
+    );
+
     const token = jwt.sign(
-      { id: newUser.id, email: newUser.email, role: newUser.role },
+      {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+        restaurantId: newUser.restaurant_id || restaurantId || null
+      },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
     res.status(201).json({
       message: 'Usuario registrado exitosamente',
-      user: newUser,
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        restaurantId: newUser.restaurant_id || restaurantId || null
+      },
       token
     });
-  } catch (error) {
+  } 
+  catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({error: 'Error interno del servidor'});
   }
 };
 
@@ -57,15 +126,26 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        restaurantId: user.restaurant_id || null
+      },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
     res.json({
       message: 'Login exitoso',
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        restaurantId: user.restaurant_id || null
+      },
+      token
     });
   } catch (error) {
     console.error(error);
