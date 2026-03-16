@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acceso | Reserva de Restaurantes</title>
+    <style>
+      :root {
+        --bg: #16120f;
+        --bg-soft: #211914;
+        --panel: rgba(255, 248, 240, 0.05);
+        --panel-strong: rgba(255, 248, 240, 0.08);
+        --border: rgba(232, 210, 189, 0.14);
+        --text: #f8f1ea;
+        --muted: #d4c2b4;
+        --primary: #c49a6c;
+        --primary-strong: #a97a4d;
+        --accent: #e5c7a5;
+        --danger: #e3a59c;
+        --success: #b8d7b0;
+        --shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, Arial, sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(196, 154, 108, 0.12), transparent 30%),
+          radial-gradient(circle at bottom right, rgba(229, 199, 165, 0.08), transparent 26%),
+          linear-gradient(160deg, #120e0b 0%, #19120e 48%, #14100d 100%);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+
+      .layout {
+        width: min(980px, 100%);
+        display: grid;
+        grid-template-columns: 1.02fr 0.98fr;
+        border-radius: 30px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+        position: relative;
+      }
+
+      .side,
+      .form-panel {
+        padding: 38px 34px;
+      }
+
+      .side {
+        background: linear-gradient(180deg, rgba(255, 248, 240, 0.03), rgba(255, 248, 240, 0.01));
+        border-right: 1px solid rgba(232, 210, 189, 0.08);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 28px;
+      }
+
+      .brand-badge {
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        font-size: 1.4rem;
+        background: linear-gradient(145deg, rgba(196, 154, 108, 0.25), rgba(255, 248, 240, 0.05));
+        border: 1px solid var(--border);
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 1.12rem;
+      }
+
+      .brand p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 0.94rem;
+      }
+
+      .side h2 {
+        margin: 0 0 14px;
+        font-size: clamp(2rem, 4vw, 2.7rem);
+        line-height: 1.08;
+      }
+
+      .side p {
+        color: var(--muted);
+        line-height: 1.65;
+        margin: 0 0 24px;
+      }
+
+      .info-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .info-card {
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: rgba(255, 248, 240, 0.04);
+        border: 1px solid rgba(232, 210, 189, 0.1);
+      }
+
+      .info-card strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 1rem;
+      }
+
+      .info-card span {
+        color: var(--muted);
+        line-height: 1.55;
+        font-size: 0.94rem;
+      }
+
+      .form-panel h3 {
+        margin: 0 0 8px;
+        font-size: 1.55rem;
+      }
+
+      .form-panel > p {
+        margin: 0 0 24px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+      }
+
+      .field label {
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+
+      .field input,
+      .field select {
+        width: 100%;
+        padding: 14px 15px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(255, 248, 240, 0.04);
+        color: var(--text);
+        font-size: 0.96rem;
+        outline: none;
+        transition: border-color 0.2s ease, transform 0.2s ease;
+      }
+
+      .field input:focus,
+      .field select:focus {
+        border-color: rgba(196, 154, 108, 0.45);
+        transform: translateY(-1px);
+      }
+
+      .field select option {
+        background: #1c1511;
+        color: var(--text);
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .checkbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+
+      .link {
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 0.93rem;
+      }
+
+      .link:hover {
+        text-decoration: underline;
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+      }
+
+      .btn {
+        border: none;
+        border-radius: 14px;
+        padding: 13px 18px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: #24170d;
+      }
+
+      .btn-secondary {
+        background: rgba(255, 248, 240, 0.05);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+
+      .btn-block {
+        width: 100%;
+      }
+
+      .status {
+        min-height: 52px;
+        padding: 14px 15px;
+        border-radius: 16px;
+        border: 1px solid rgba(232, 210, 189, 0.08);
+        background: rgba(255, 248, 240, 0.03);
+        color: var(--muted);
+        line-height: 1.5;
+        font-size: 0.93rem;
+      }
+
+      .status.success {
+        color: var(--success);
+        border-color: rgba(184, 215, 176, 0.18);
+      }
+
+      .status.error {
+        color: var(--danger);
+        border-color: rgba(227, 165, 156, 0.18);
+      }
+
+      .switch-box {
+        margin-top: 18px;
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: rgba(255, 248, 240, 0.04);
+        border: 1px solid rgba(232, 210, 189, 0.1);
+      }
+
+      .switch-box p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 0.93rem;
+      }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 8, 7, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 20;
+      }
+
+      .overlay.active {
+        display: flex;
+      }
+
+      .modal {
+        width: min(560px, 100%);
+        background: rgba(25, 19, 15, 0.98);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 18px;
+        border-bottom: 1px solid rgba(232, 210, 189, 0.08);
+        cursor: move;
+        user-select: none;
+        background: rgba(255, 248, 240, 0.03);
+      }
+
+      .modal-header h4 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+
+      .modal-header span {
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .close-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 248, 240, 0.05);
+        color: var(--text);
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      .modal-body {
+        padding: 22px 18px 18px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .inline-note {
+        margin: -4px 0 2px;
+        color: var(--muted);
+        font-size: 0.88rem;
+        line-height: 1.45;
+      }
+
+      code {
+        color: var(--accent);
+        font-family: Consolas, monospace;
+      }
+
+      @media (max-width: 860px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .side {
+          border-right: none;
+          border-bottom: 1px solid rgba(232, 210, 189, 0.08);
+        }
+      }
+
+      @media (max-width: 560px) {
+        .side,
+        .form-panel {
+          padding: 26px 20px;
+        }
+
+        .btn-row {
+          flex-direction: column;
+        }
+
+        .btn,
+        .close-btn {
+          width: 100%;
+        }
+
+        .modal {
+          width: 100%;
+        }
+
+        .modal-header {
+          cursor: default;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="layout">
+      <section class="side">
+        <div class="brand">
+          <div class="brand-badge">🍽️</div>
+          <div>
+            <h1>Reserva de Restaurantes</h1>
+            <p>Acceso al sistema</p>
+          </div>
+        </div>
+
+        <h2>Entra o crea tu cuenta desde la misma vista</h2>
+        <p>
+          Así queda más parecido a una interfaz real: el usuario inicia sesión aquí mismo y, si no
+          tiene cuenta, abre el registro sin salir de la pantalla.
+        </p>
+
+        <div class="info-list">
+          <div class="info-card">
+            <strong>Login</strong>
+            <span>
+              Usa <code>email</code> y <code>password</code> para conectarse a
+              <code>/auth/login</code>.
+            </span>
+          </div>
+          <div class="info-card">
+            <strong>Registro</strong>
+            <span>
+              El registro queda listo para cliente y también para administrador con
+              <code>restaurantName</code> y <code>restaurantCode</code>.
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-panel">
+        <h3>Iniciar sesión</h3>
+        <p>Ingresa al sistema con tus credenciales actuales.</p>
+
+        <!-- Dario y compañero: este formulario ya usa los mismos campos que espera el backend actual. -->
+        <form class="form" id="loginForm">
+          <div class="field">
+            <label for="loginEmail">Correo electrónico</label>
+            <input
+              type="email"
+              id="loginEmail"
+              name="email"
+              placeholder="ejemplo@correo.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="loginPassword">Contraseña</label>
+            <input
+              type="password"
+              id="loginPassword"
+              name="password"
+              placeholder="Ingresa tu contraseña"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <div class="row">
+            <label class="checkbox">
+              <input type="checkbox" id="remember" />
+              Mantener sesión iniciada
+            </label>
+            <a href="#" class="link">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <div class="btn-row">
+            <button type="submit" class="btn btn-primary">Entrar</button>
+            <button type="button" class="btn btn-secondary" onclick="goHome()">Volver al inicio</button>
+          </div>
+
+          <div class="status" id="loginStatus">
+            El formulario de login ya quedó listo para conectarlo después con el fetch real.
+          </div>
+        </form>
+
+        <div class="switch-box">
+          <p>
+            ¿Todavía no tienes cuenta? Ábrela desde aquí para no mandar al usuario a otra pantalla.
+          </p>
+          <button type="button" class="btn btn-secondary btn-block" id="openRegisterBtn">
+            Crear cuenta
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <div class="overlay" id="registerOverlay">
+      <div class="modal" id="registerModal">
+        <div class="modal-header" id="dragHandle">
+          <div>
+            <h4>Registro de usuario</h4>
+            <span>Ventana movible para no romper la vista principal</span>
+          </div>
+          <button class="close-btn" id="closeRegisterBtn" type="button">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Dario y compañero: estos name están alineados con el backend que ya tienen en register. -->
+          <form class="form" id="registerForm">
+            <div class="field">
+              <label for="registerName">Nombre completo</label>
+              <input
+                type="text"
+                id="registerName"
+                name="name"
+                placeholder="Tu nombre"
+                autocomplete="name"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="registerEmail">Correo electrónico</label>
+              <input
+                type="email"
+                id="registerEmail"
+                name="email"
+                placeholder="ejemplo@correo.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="registerPassword">Contraseña</label>
+              <input
+                type="password"
+                id="registerPassword"
+                name="password"
+                placeholder="Mínimo 8 caracteres"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="registerRole">Tipo de cuenta</label>
+              <select id="registerRole" name="role">
+                <option value="client">Cliente</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+
+            <div id="adminFields" class="hidden">
+              <div class="field">
+                <label for="restaurantName">Nombre del local</label>
+                <input
+                  type="text"
+                  id="restaurantName"
+                  name="restaurantName"
+                  placeholder="Nombre exacto del local"
+                />
+              </div>
+
+              <div class="field">
+                <label for="restaurantCode">Código del local</label>
+                <input
+                  type="password"
+                  id="restaurantCode"
+                  name="restaurantCode"
+                  placeholder="Código de seguridad del local"
+                />
+              </div>
+
+              <p class="inline-note">
+                Solo llenen estos dos campos cuando el usuario vaya a registrarse como admin.
+              </p>
+            </div>
+
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary">Registrarme</button>
+              <button type="button" class="btn btn-secondary" id="cancelRegisterBtn">Cancelar</button>
+            </div>
+
+            <div class="status" id="registerStatus">
+              Esta ventana ya está preparada para conectarse luego con <code>/auth/register</code>.
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const loginStatus = document.getElementById('loginStatus');
+      const registerStatus = document.getElementById('registerStatus');
+      const openRegisterBtn = document.getElementById('openRegisterBtn');
+      const closeRegisterBtn = document.getElementById('closeRegisterBtn');
+      const cancelRegisterBtn = document.getElementById('cancelRegisterBtn');
+      const registerOverlay = document.getElementById('registerOverlay');
+      const registerRole = document.getElementById('registerRole');
+      const adminFields = document.getElementById('adminFields');
+      const restaurantName = document.getElementById('restaurantName');
+      const restaurantCode = document.getElementById('restaurantCode');
+      const registerModal = document.getElementById('registerModal');
+      const dragHandle = document.getElementById('dragHandle');
+
+      loginForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        if (!email || !password) {
+          loginStatus.className = 'status error';
+          loginStatus.textContent = 'Completen el correo y la contraseña antes de continuar.';
+          return;
+        }
+
+        loginStatus.className = 'status success';
+        loginStatus.textContent = 'Login listo. Cuando lo conecten, aquí entra el fetch a /auth/login.';
+      });
+
+      registerForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const name = document.getElementById('registerName').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const password = document.getElementById('registerPassword').value;
+        const role = registerRole.value;
+
+        if (!name || !email || !password) {
+          registerStatus.className = 'status error';
+          registerStatus.textContent = 'Completen nombre, correo y contraseña para registrarse.';
+          return;
+        }
+
+        if (password.length < 8) {
+          registerStatus.className = 'status error';
+          registerStatus.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+          return;
+        }
+
+        if (role === 'admin') {
+          if (!restaurantName.value.trim() || !restaurantCode.value.trim()) {
+            registerStatus.className = 'status error';
+            registerStatus.textContent = 'Para admin deben indicar el local y el código del local.';
+            return;
+          }
+        }
+
+        registerStatus.className = 'status success';
+        registerStatus.textContent = 'Registro listo. Solo falta conectarlo con /auth/register.';
+      });
+
+      registerRole.addEventListener('change', function () {
+        const isAdmin = this.value === 'admin';
+        adminFields.classList.toggle('hidden', !isAdmin);
+        restaurantName.required = isAdmin;
+        restaurantCode.required = isAdmin;
+      });
+
+      function openRegister() {
+        registerOverlay.classList.add('active');
+        registerModal.style.transform = 'translate(0px, 0px)';
+      }
+
+      function closeRegister() {
+        registerOverlay.classList.remove('active');
+      }
+
+      openRegisterBtn.addEventListener('click', openRegister);
+      closeRegisterBtn.addEventListener('click', closeRegister);
+      cancelRegisterBtn.addEventListener('click', closeRegister);
+
+      registerOverlay.addEventListener('click', function (event) {
+        if (event.target === registerOverlay) {
+          closeRegister();
+        }
+      });
+
+      function goHome() {
+        window.location.href = 'index.html';
+      }
+
+      // Ventana movible simple para escritorio.
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let currentX = 0;
+      let currentY = 0;
+
+      dragHandle.addEventListener('mousedown', function (event) {
+        if (window.innerWidth <= 560) return;
+        isDragging = true;
+        startX = event.clientX - currentX;
+        startY = event.clientY - currentY;
+      });
+
+      window.addEventListener('mousemove', function (event) {
+        if (!isDragging) return;
+        currentX = event.clientX - startX;
+        currentY = event.clientY - startY;
+        registerModal.style.transform = `translate(${currentX}px, ${currentY}px)`;
+      });
+
+      window.addEventListener('mouseup', function () {
+        isDragging = false;
+      });
+    </script>
+  </body>
+</html>
