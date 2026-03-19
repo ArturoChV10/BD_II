@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv'); // Carga las variables de entorno 
 const authRoutes = require('./routes/authRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 dotenv.config();
 
@@ -14,5 +15,6 @@ app.get('/', (req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/restaurants', restaurantRoutes);
+app.use('/users', userRoutes);
 
 module.exports = app;

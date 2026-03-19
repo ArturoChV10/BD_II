@@ -13,6 +13,7 @@ services:
       - DB_PASSWORD=postgres
       - DB_NAME=restaurant_db
       - JWT_SECRET=jwt_secret
+      - RESTAURANT_SETUP_KEY=clave_restaurant_setup
     depends_on:
       - db
     volumes:
