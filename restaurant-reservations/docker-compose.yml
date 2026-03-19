@@ -15,7 +15,8 @@ services:
       - JWT_SECRET=jwt_secret
       - RESTAURANT_SETUP_KEY=clave_restaurant_setup
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./:/app # montar el código fuente
       - /app/node_modules  # evitar montar node_modules
@@ -30,7 +31,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      #- ./src/config/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./src/config/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d restaurant_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
