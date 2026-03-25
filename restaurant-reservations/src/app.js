@@ -3,6 +3,8 @@ const dotenv = require('dotenv'); // Carga las variables de entorno
 const authRoutes = require('./routes/authRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
 const userRoutes = require('./routes/userRoutes');
+const menuRoutes = require('./routes/menuRoutes');
+const dishRoutes = require('./routes/dishRoutes');
 
 dotenv.config();
 
@@ -16,5 +18,6 @@ app.get('/', (req, res) => {
 app.use('/auth', authRoutes);
 app.use('/restaurants', restaurantRoutes);
 app.use('/users', userRoutes);
-
+app.use('/menus', menuRoutes);
+app.use('/menus/:menuId/dishes', dishRoutes); // Rutas de platos anidadas bajo menús  
 module.exports = app;
