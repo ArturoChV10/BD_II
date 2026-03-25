@@ -5,6 +5,8 @@ const restaurantRoutes = require('./routes/restaurantRoutes');
 const userRoutes = require('./routes/userRoutes');
 const menuRoutes = require('./routes/menuRoutes');
 const dishRoutes = require('./routes/dishRoutes');
+const reservationRoutes = require('./routes/reservationRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 dotenv.config();
 
@@ -19,5 +21,7 @@ app.use('/auth', authRoutes);
 app.use('/restaurants', restaurantRoutes);
 app.use('/users', userRoutes);
 app.use('/menus', menuRoutes);
-app.use('/menus/:menuId/dishes', dishRoutes); // Rutas de platos anidadas bajo menús  
+app.use('/menus/:menuId/dishes', dishRoutes); // Rutas de platos anidadas bajo menús
+app.use('/reservations', reservationRoutes);
+app.use('/orders', orderRoutes);
 module.exports = app;

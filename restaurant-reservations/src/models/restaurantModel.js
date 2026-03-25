@@ -17,8 +17,14 @@ const createRestaurant = async (name, adminCode) => {
   return result.rows[0];
 };
 
+const findRestaurantById = async (id) => {
+  const result = await pool.query('SELECT * FROM restaurants WHERE id = $1', [id]);
+  return result.rows[0];
+};
+
 module.exports = {
   findRestaurantByName,
   getAllRestaurants,
-  createRestaurant
+  createRestaurant,
+  findRestaurantById
 };
