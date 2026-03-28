@@ -1,0 +1,19 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiar dependencias
+COPY restaurant-reservations/package*.json ./
+
+# Instalar todas las dependencias (incluidas las de dev)
+RUN npm install
+
+# Copiar código fuente
+COPY restaurant-reservations/src ./src
+COPY restaurant-reservations/jest.config.js ./
+
+# Copiar tests
+COPY Tests ./tests
+
+# Ejecutar tests
+CMD ["npx", "jest", "--passWithNoTests"]
