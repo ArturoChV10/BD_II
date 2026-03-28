@@ -17,3 +17,10 @@ COPY Tests ./tests
 
 # Ejecutar tests
 CMD ["npx", "jest", "--passWithNoTests"]
+
+#Pruebas individuales
+#docker run --rm restaurant-api:tests npx jest tests/auth.test.js --verbose
+#docker run --rm restaurant-api:tests npx jest tests/menus.test.js --verbose
+#docker run --rm restaurant-api:tests npx jest tests/orders.test.js --verbose
+#docker run --rm restaurant-api:tests npx jest tests/reservations.test.js --verbose
+#docker run --rm restaurant-api:tests npx jest tests/restaurants.test.js --verbose
