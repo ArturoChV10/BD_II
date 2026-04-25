@@ -1,8 +1,8 @@
-const restaurantModel = require('../models/restaurantModel');
+const { restaurantDao } = require('../daos/factory');
 
 const getRestaurants = async (req, res) => {
   try {
-    const restaurants = await restaurantModel.getAllRestaurants();
+    const restaurants = await restaurantDao.getAllRestaurants();
     res.json({ message: 'Restaurantes obtenidos correctamente', restaurants });
   } catch (error) {
     console.error(error);
@@ -41,13 +41,13 @@ const createRestaurant = async (req, res) => {
     }
 
     // Verificar si ya existe un restaurante con ese nombre
-    const existingRestaurant = await restaurantModel.findRestaurantByName(name);
+    const existingRestaurant = await restaurantDao.findRestaurantByName(name);
     if (existingRestaurant) {
       return res.status(409).json({ error: 'Ya existe un restaurante con ese nombre' });
     }
 
     // Crear el restaurante
-    const newRestaurant = await restaurantModel.createRestaurant(name, adminCode);
+    const newRestaurant = await restaurantDao.createRestaurant(name, adminCode);
 
     res.status(201).json({
       message: 'Restaurante creado exitosamente',

@@ -1,9 +1,9 @@
-const menuModel = require('../models/menuModel');
+const menuModel = require('../daos/factory');
 
 const getMenus = async (req, res) => {
   try {
     const { restaurantId } = req.query;
-    const menus = await menuModel.getAllMenus(restaurantId);
+    const menus = await menuDao.getAllMenus(restaurantId);
     res.json({ message: 'Menús obtenidos correctamente', menus });
   } catch (error) {
     console.error(error);
@@ -14,7 +14,7 @@ const getMenus = async (req, res) => {
 const getMenuById = async (req, res) => {
   try {
     const { id } = req.params;
-    const menu = await menuModel.getMenuById(id);
+    const menu = await menuDao.getMenuById(id);
     if (!menu) {
       return res.status(404).json({ error: 'Menú no encontrado' });
     }
@@ -47,7 +47,7 @@ const createMenu = async (req, res) => {
       return res.status(403).json({ error: 'No puedes crear menús para otros restaurantes' });
     }
 
-    const newMenu = await menuModel.createMenu(name, description, targetRestaurantId);
+    const newMenu = await menuDao.createMenu(name, description, targetRestaurantId);
     res.status(201).json({ message: 'Menú creado exitosamente', menu: newMenu });
   } catch (error) {
     console.error(error);
@@ -61,7 +61,7 @@ const updateMenu = async (req, res) => {
     const { name, description } = req.body;
 
     // Verificar que el menú existe
-    const existingMenu = await menuModel.getMenuById(id);
+    const existingMenu = await menuDao.getMenuById(id);
     if (!existingMenu) {
       return res.status(404).json({ error: 'Menú no encontrado' });
     }
@@ -79,7 +79,7 @@ const updateMenu = async (req, res) => {
       return res.status(400).json({ error: 'No hay campos para actualizar' });
     }
 
-    const updatedMenu = await menuModel.updateMenu(id, fields);
+    const updatedMenu = await menuDao.updateMenu(id, fields);
     res.json({ message: 'Menú actualizado', menu: updatedMenu });
   } catch (error) {
     console.error(error);
@@ -91,7 +91,7 @@ const deleteMenu = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existingMenu = await menuModel.getMenuById(id);
+    const existingMenu = await menuDao.getMenuById(id);
     if (!existingMenu) {
       return res.status(404).json({ error: 'Menú no encontrado' });
     }
@@ -100,7 +100,7 @@ const deleteMenu = async (req, res) => {
       return res.status(403).json({ error: 'No tienes permiso para eliminar este menú' });
     }
 
-    await menuModel.deleteMenu(id);
+    await menuDao.deleteMenu(id);
     res.json({ message: 'Menú eliminado correctamente' });
   } catch (error) {
     console.error(error);

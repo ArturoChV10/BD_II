@@ -1,4 +1,4 @@
-const userModel = require('../models/userModel');
+const { userDao, restaurantDao } = require('../daos/factory');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -25,7 +25,7 @@ const register = async (req, res) => {
     }
     
     // Verificar si el usuario ya existe
-    const existingUser = await userModel.findUserByEmail(email);
+    const existingUser = await userDao.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'El email ya está registrado' });
     }
@@ -41,7 +41,7 @@ const register = async (req, res) => {
           error: 'Para registrarse como administrador debe indicar el local y su código de seguridad'});
       }
 
-      const restaurant = await userModel.findRestaurantByName(restaurantName.trim());
+      const restaurant = await restaurantDao.findRestaurantByName(restaurantName.trim());
 
       if (!restaurant) {
         return res.status(404).json({
@@ -59,7 +59,7 @@ const register = async (req, res) => {
       }
 
       // Evitar que el mismo local tenga varios admins si así lo quieren manejar
-      const restaurantAlreadyHasAdmin = await userModel.findAdminByRestaurantId(restaurant.id);
+      const restaurantAlreadyHasAdmin = await userDao.findAdminByRestaurantId(restaurant.id);
 
       if (restaurantAlreadyHasAdmin) {
         return res.status(409).json({
@@ -70,7 +70,7 @@ const register = async (req, res) => {
       restaurantId = restaurant.id;
     }
 
-    const newUser = await userModel.createUser(
+    const newUser = await userDao.create(
       name,
       email,
       password,
@@ -115,7 +115,7 @@ const login = async (req, res) => {
       return res.status(400).json({ error: 'Email y password son obligatorios' });
     }
 
-    const user = await userModel.findUserByEmail(email);
+    const user = await userDao.findByEmail(email);
     if (!user) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }

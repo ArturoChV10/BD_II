@@ -1,5 +1,4 @@
-const dishModel = require('../models/dishModel');
-const menuModel = require('../models/menuModel');
+const { dishDao, menuDao } = require('../daos/factory');
 
 const getDishesByMenu = async (req, res) => {
   try {
@@ -8,7 +7,7 @@ const getDishesByMenu = async (req, res) => {
     if (!menu) {
       return res.status(404).json({ error: 'Menú no encontrado' });
     }
-    const dishes = await dishModel.getDishesByMenuId(menuId);
+    const dishes = await dishDao.getDishesByMenuId(menuId);
     res.json({ message: 'Platos obtenidos', dishes });
   } catch (error) {
     console.error(error);
@@ -19,7 +18,7 @@ const getDishesByMenu = async (req, res) => {
 const getDishById = async (req, res) => {
   try {
     const { id } = req.params;
-    const dish = await dishModel.getDishById(id);
+    const dish = await dishDao.getDishById(id);
     if (!dish) {
       return res.status(404).json({ error: 'Plato no encontrado' });
     }
@@ -52,7 +51,7 @@ const createDish = async (req, res) => {
       return res.status(403).json({ error: 'No autorizado para agregar platos a este menú' });
     }
 
-    const newDish = await dishModel.createDish(name, description, parseFloat(price), menuId);
+    const newDish = await dishDao.createDish(name, description, parseFloat(price), menuId);
     res.status(201).json({ message: 'Plato creado', dish: newDish });
   } catch (error) {
     console.error(error);
@@ -65,7 +64,7 @@ const updateDish = async (req, res) => {
     const { id } = req.params;
     const { name, description, price } = req.body;
 
-    const existingDish = await dishModel.getDishById(id);
+    const existingDish = await dishDao.getDishById(id);
     if (!existingDish) {
       return res.status(404).json({ error: 'Plato no encontrado' });
     }
@@ -85,7 +84,7 @@ const updateDish = async (req, res) => {
       return res.status(400).json({ error: 'No hay campos para actualizar' });
     }
 
-    const updatedDish = await dishModel.updateDish(id, fields);
+    const updatedDish = await dishDao.updateDish(id, fields);
     res.json({ message: 'Plato actualizado', dish: updatedDish });
   } catch (error) {
     console.error(error);
@@ -97,7 +96,7 @@ const deleteDish = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existingDish = await dishModel.getDishById(id);
+    const existingDish = await dishDao.getDishById(id);
     if (!existingDish) {
       return res.status(404).json({ error: 'Plato no encontrado' });
     }
@@ -107,7 +106,7 @@ const deleteDish = async (req, res) => {
       return res.status(403).json({ error: 'No tienes permiso para eliminar este plato' });
     }
 
-    await dishModel.deleteDish(id);
+    await dishDao.deleteDish(id);
     res.json({ message: 'Plato eliminado correctamente' });
   } catch (error) {
     console.error(error);
