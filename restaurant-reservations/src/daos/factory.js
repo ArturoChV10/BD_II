@@ -4,6 +4,8 @@ if (dbType === 'postgres') {
   module.exports = {
     userDao: require('./postgres/userDaoPg'),
     restaurantDao: require('./postgres/restaurantDaoPg'),
+    menuDao: require('./postgres/menuDaoPg'),
+    dishDao: require('./postgres/dishDaoPg'),
     // Más adelante agregaremos restaurantDao, menuDao, etc.
   };
 } else if (dbType === 'mongodb') {

@@ -1,4 +1,4 @@
-const menuModel = require('../daos/factory');
+const { menuDao } = require('../daos/factory');
 
 const getMenus = async (req, res) => {
   try {
