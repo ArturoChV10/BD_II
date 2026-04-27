@@ -1,4 +1,4 @@
-const reservationModel = require('../models/reservationModel');
+const { reservationDao } = require('../daos/factory');
 
 const createReservation = async (req, res) => {
   try {
@@ -9,7 +9,7 @@ const createReservation = async (req, res) => {
       return res.status(400).json({ error: 'Faltan datos obligatorios' });
     }
 
-    const newReservation = await reservationModel.createReservation(userId, restaurantId, date, time, numPeople);
+    const newReservation = await reservationDao.createReservation(userId, restaurantId, date, time, numPeople);
     res.status(201).json({ message: 'Reserva creada', reservation: newReservation });
   } catch (error) {
     console.error(error);
@@ -22,7 +22,7 @@ const cancelReservation = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const reservation = await reservationModel.getReservationById(id);
+    const reservation = await reservationDao.getReservationById(id);
     if (!reservation) {
       return res.status(404).json({ error: 'Reserva no encontrada' });
     }
@@ -32,7 +32,7 @@ const cancelReservation = async (req, res) => {
       return res.status(403).json({ error: 'No autorizado' });
     }
 
-    const cancelled = await reservationModel.cancelReservation(id);
+    const cancelled = await reservationDao.cancelReservation(id);
     res.json({ message: 'Reserva cancelada', reservation: cancelled });
   } catch (error) {
     console.error(error);

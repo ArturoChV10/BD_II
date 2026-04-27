@@ -3,7 +3,7 @@ const { dishDao, menuDao } = require('../daos/factory');
 const getDishesByMenu = async (req, res) => {
   try {
     const { menuId } = req.params;
-    const menu = await menuModel.getMenuById(menuId);
+    const menu = await menuDao.getMenuById(menuId);
     if (!menu) {
       return res.status(404).json({ error: 'Menú no encontrado' });
     }
@@ -41,7 +41,7 @@ const createDish = async (req, res) => {
     }
 
     // Verificar que el menú existe
-    const menu = await menuModel.getMenuById(menuId);
+    const menu = await menuDao.getMenuById(menuId);
     if (!menu) {
       return res.status(404).json({ error: 'Menú no encontrado' });
     }
@@ -70,7 +70,7 @@ const updateDish = async (req, res) => {
     }
 
     // Obtener el menú para verificar restaurante
-    const menu = await menuModel.getMenuById(existingDish.menu_id);
+    const menu = await menuDao.getMenuById(existingDish.menu_id);
     if (!req.user || req.user.role !== 'admin' || req.user.restaurantId !== menu.restaurant_id) {
       return res.status(403).json({ error: 'No tienes permiso para modificar este plato' });
     }
@@ -101,7 +101,7 @@ const deleteDish = async (req, res) => {
       return res.status(404).json({ error: 'Plato no encontrado' });
     }
 
-    const menu = await menuModel.getMenuById(existingDish.menu_id);
+    const menu = await menuDao.getMenuById(existingDish.menu_id);
     if (!req.user || req.user.role !== 'admin' || req.user.restaurantId !== menu.restaurant_id) {
       return res.status(403).json({ error: 'No tienes permiso para eliminar este plato' });
     }
