@@ -1,43 +1,46 @@
-const userModel = require('../models/userModel');
-const bcrypt = require('bcrypt');
+const { userDao } = require("../daos/factory");
+const bcrypt = require("bcrypt");
 
 const getProfile = async (req, res) => {
   try {
-    // req.user viene del middleware authenticateToken
-    const user = await userModel.findUserById(req.user.id);
+    const user = await userDao.findById(req.user.id);
+
     if (!user) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+      return res.status(404).json({ error: "Usuario no encontrado" });
     }
+
     const { password_hash, ...safeUser } = user;
-    res.json({ message: 'Perfil de usuario', user: safeUser });
+    res.json({ message: "Perfil de usuario", user: safeUser });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 
 const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await userModel.findUserById(id);
+    const user = await userDao.findById(id);
+
     if (!user) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+      return res.status(404).json({ error: "Usuario no encontrado" });
     }
+
     const { password_hash, ...safeUser } = user;
-    res.json({ message: 'Usuario encontrado', user: safeUser });
+    res.json({ message: "Usuario encontrado", user: safeUser });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel.getAllUsers();
-    res.json({ message: 'Usuarios obtenidos', users });
+    const users = await userDao.findAll();
+    res.json({ message: "Usuarios obtenidos", users });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 
@@ -46,46 +49,57 @@ const updateUser = async (req, res) => {
     const { id } = req.params;
     const { name, email, password, role, restaurantId } = req.body;
 
-    // Verificar que el usuario exista
-    const existingUser = await userModel.findUserById(id);
+    const existingUser = await userDao.findById(id);
+
     if (!existingUser) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+      return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    // Autorización: solo el propio usuario o un admin pueden modificar
-    if (req.user.id !== parseInt(id) && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'No tienes permiso para modificar este usuario' });
+    if (req.user.id !== parseInt(id) && req.user.role !== "admin") {
+      return res.status(403).json({ error: "No tienes permiso para modificar este usuario" });
     }
 
     const fields = {};
-    if (name) fields.name = name;
+
+    if (name) {
+      fields.name = name;
+    }
+
     if (email) {
-      // Verificar que el email no esté en uso por otro usuario
-      const userWithEmail = await userModel.findUserByEmail(email);
+      const userWithEmail = await userDao.findByEmail(email);
+
       if (userWithEmail && userWithEmail.id !== parseInt(id)) {
-        return res.status(400).json({ error: 'El email ya está en uso' });
+        return res.status(400).json({ error: "El email ya está en uso" });
       }
+
       fields.email = email;
     }
+
     if (password) {
       fields.password_hash = await bcrypt.hash(password, 10);
     }
 
-    if (req.user.role === 'admin') {
-      if (role) fields.role = role;
-      if (restaurantId) fields.restaurant_id = restaurantId;
+    if (req.user.role === "admin") {
+      if (role) {
+        fields.role = role;
+      }
+
+      if (restaurantId) {
+        fields.restaurant_id = restaurantId;
+      }
     }
 
     if (Object.keys(fields).length === 0) {
-      return res.status(400).json({ error: 'No hay campos para actualizar' });
+      return res.status(400).json({ error: "No hay campos para actualizar" });
     }
 
-    const updatedUser = await userModel.updateUser(id, fields);
+    const updatedUser = await userDao.update(id, fields);
     const { password_hash, ...safeUser } = updatedUser;
-    res.json({ message: 'Usuario actualizado', user: safeUser });
+
+    res.json({ message: "Usuario actualizado", user: safeUser });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 
@@ -93,19 +107,20 @@ const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Solo admin puede eliminar usuarios
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'No tienes permiso para eliminar usuarios' });
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "No tienes permiso para eliminar usuarios" });
     }
 
-    const deleted = await userModel.deleteUser(id);
+    const deleted = await userDao.deleteUser(id);
+
     if (!deleted) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+      return res.status(404).json({ error: "Usuario no encontrado" });
     }
-    res.json({ message: 'Usuario eliminado correctamente' });
+
+    res.json({ message: "Usuario eliminado correctamente" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 
