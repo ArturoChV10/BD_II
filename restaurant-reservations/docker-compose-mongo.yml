@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_TYPE=mongodb
+      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_DB_NAME=restaurant_db
+      - JWT_SECRET=jwt_secret
+      - RESTAURANT_SETUP_KEY=clave_restaurant_setup
+    depends_on:
+      - mongo
+    volumes:
+      - ./:/app
+      - /app/node_modules
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
