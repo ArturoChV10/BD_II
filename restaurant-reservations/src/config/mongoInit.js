@@ -14,13 +14,17 @@ const initMongo = async () => {
   await db.collection("menus").createIndex({ restaurant_id: 1 });
   await db.collection("menus").createIndex({ "dishes.id": 1 });
 
-  await db.collection("reservations").createIndex({ id: 1 }, { unique: true });
+  await db.collection("reservations").createIndex({ id: 1 });
   await db.collection("reservations").createIndex({ user_id: 1 });
   await db.collection("reservations").createIndex({ restaurant_id: 1 });
 
   await db.collection("orders").createIndex({ id: 1 }, { unique: true });
   await db.collection("orders").createIndex({ user_id: 1 });
   await db.collection("orders").createIndex({ restaurant_id: 1 });
+
+  await db.collection("dishes").createIndex({ id: 1 });
+  await db.collection("dishes").createIndex({ menu_id: 1 });
+  await db.collection("dishes").createIndex({ restaurant_id: 1 });
 };
 
 module.exports = initMongo;

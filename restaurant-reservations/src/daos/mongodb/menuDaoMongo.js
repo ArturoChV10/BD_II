@@ -43,7 +43,7 @@ const createMenu = async (name, description, restaurantId) => {
     name,
     description: description || null,
     restaurant_id: toNumber(restaurantId),
-    dishes: [],
+    // dishes: [],  <- se elimina para sharding
     created_at: createdAt,
     updated_at: createdAt
   };

@@ -1,0 +1,95 @@
+version: "3.8"
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_TYPE=mongodb
+      - MONGO_URI=mongodb://mongos:27017
+      - MONGO_DB_NAME=restaurant_db
+      - JWT_SECRET=jwt_secret
+      - RESTAURANT_SETUP_KEY=clave_restaurant_setup
+    depends_on:
+      - mongos
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    networks:
+      - mongo-cluster
+
+  # Config Servers (3 nodos)
+  cfg1:
+    image: mongo:7
+    command: mongod --configsvr --replSet cfgrs --port 27017 --bind_ip_all
+    volumes:
+      - cfg1:/data/db
+    networks:
+      - mongo-cluster
+  cfg2:
+    image: mongo:7
+    command: mongod --configsvr --replSet cfgrs --port 27017 --bind_ip_all
+    volumes:
+      - cfg2:/data/db
+    networks:
+      - mongo-cluster
+  cfg3:
+    image: mongo:7
+    command: mongod --configsvr --replSet cfgrs --port 27017 --bind_ip_all
+    volumes:
+      - cfg3:/data/db
+    networks:
+      - mongo-cluster
+
+  # Shard 1 (3 nodos)
+  shard1a:
+    image: mongo:7
+    command: mongod --shardsvr --replSet shard1rs --port 27017 --bind_ip_all
+    volumes:
+      - shard1a:/data/db
+    networks:
+      - mongo-cluster
+  shard1b:
+    image: mongo:7
+    command: mongod --shardsvr --replSet shard1rs --port 27017 --bind_ip_all
+    volumes:
+      - shard1b:/data/db
+    networks:
+      - mongo-cluster
+  shard1c:
+    image: mongo:7
+    command: mongod --shardsvr --replSet shard1rs --port 27017 --bind_ip_all
+    volumes:
+      - shard1c:/data/db
+    networks:
+      - mongo-cluster
+
+  # Router (mongos)
+  mongos:
+    image: mongo:7
+    command: mongos --configdb cfgrs/cfg1:27017,cfg2:27017,cfg3:27017 --bind_ip_all
+    ports:
+      - "27017:27017"
+    depends_on:
+      - cfg1
+      - cfg2
+      - cfg3
+      - shard1a
+      - shard1b
+      - shard1c
+    networks:
+      - mongo-cluster
+
+networks:
+  mongo-cluster:
+    driver: bridge
+
+volumes:
+  cfg1:
+  cfg2:
+  cfg3:
+  shard1a:
+  shard1b:
+  shard1c:
