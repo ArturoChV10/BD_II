@@ -54,28 +54,38 @@ const createOrder = async (userId, restaurantId, orderType) => {
 
 const addOrderItem = async (orderId, dishId, quantity, unitPrice) => {
   const orders = await getCollection("orders");
-  const menus = await getCollection("menus");
+  const dishes = await getCollection("dishes");
 
-  const menu = await menus.findOne({ "dishes.id": toNumber(dishId) });
-  const dish = menu ? menu.dishes.find((item) => item.id === toNumber(dishId)) : null;
+  const dish = await dishes.findOne({ id: toNumber(dishId) });
+
+  if (!dish) {
+    return null;
+  }
+
+  const numericQuantity = toNumber(quantity);
+  const numericUnitPrice = Number(unitPrice);
 
   const item = {
     id: await getNextId("order_items"),
     order_id: toNumber(orderId),
     dish_id: toNumber(dishId),
-    dish_name: dish ? dish.name : null,
-    quantity: toNumber(quantity),
-    unit_price: Number(unitPrice),
-    subtotal: toNumber(quantity) * Number(unitPrice)
+    dish_name: dish.name,
+    quantity: numericQuantity,
+    unit_price: numericUnitPrice,
+    subtotal: numericQuantity * numericUnitPrice
   };
 
-  await orders.updateOne(
+  const result = await orders.updateOne(
     { id: toNumber(orderId) },
     {
       $push: { items: item },
       $set: { updated_at: now() }
     }
   );
+
+  if (result.matchedCount === 0) {
+    return null;
+  }
 
   return item;
 };
