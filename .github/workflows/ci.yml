@@ -32,7 +32,7 @@ jobs:
           cache-dependency-path: restaurant-reservations/package-lock.json
 
       - name: Instalar dependencias
-        run: npm ci
+        run: npm install
 
       - name: Validar carga de la API con PostgreSQL
         run: node -e "require('./src/app'); console.log('API carga correctamente con PostgreSQL')"
