@@ -12,8 +12,12 @@ services:
       - MONGO_DB_NAME=restaurant_db
       - JWT_SECRET=jwt_secret
       - RESTAURANT_SETUP_KEY=clave_restaurant_setup
+      - REDIS_URL=redis://redis:6379
     depends_on:
-      - mongos
+      mongos:
+        condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
       - ./:/app
       - /app/node_modules
@@ -58,6 +62,15 @@ services:
       - shard1b:/data/db
     networks:
       - mongo-cluster
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - mongo-cluster
+    restart: unless-stopped
+
   shard1c:
     image: mongo:7
     command: mongod --shardsvr --replSet shard1rs --port 27017 --bind_ip_all
@@ -79,6 +92,11 @@ services:
       - shard1a
       - shard1b
       - shard1c
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - mongo-cluster
 

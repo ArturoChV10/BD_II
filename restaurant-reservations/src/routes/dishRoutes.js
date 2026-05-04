@@ -1,4 +1,6 @@
 const express = require('express');
+const cacheMiddleware = require('../middlewares/cacheMiddleware');
+
 const {
   getDishesByMenu,
   getDishById,
@@ -11,8 +13,8 @@ const { authenticateToken } = require('../middlewares/authMiddleware');
 const router = express.Router({ mergeParams: true });
 
 // Ruta para listar platos de un menú específico
-router.get('/', getDishesByMenu);
-router.get('/:id', getDishById);
+router.get('/', cacheMiddleware(60), getDishesByMenu);
+router.get('/:id', cacheMiddleware(60), getDishById);
 
 // Rutas protegidas (solo admin del restaurante)
 router.post('/', authenticateToken, createDish);

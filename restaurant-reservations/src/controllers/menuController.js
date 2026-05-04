@@ -1,4 +1,5 @@
 const { menuDao } = require('../daos/factory');
+const cache = require('../utils/cache');
 
 const getMenus = async (req, res) => {
   try {
@@ -48,6 +49,7 @@ const createMenu = async (req, res) => {
     }
 
     const newMenu = await menuDao.createMenu(name, description, targetRestaurantId);
+    await cache.del('cache:/menus*');
     res.status(201).json({ message: 'Menú creado exitosamente', menu: newMenu });
   } catch (error) {
     console.error(error);
@@ -80,6 +82,7 @@ const updateMenu = async (req, res) => {
     }
 
     const updatedMenu = await menuDao.updateMenu(id, fields);
+    await cache.del('cache:/menus*');
     res.json({ message: 'Menú actualizado', menu: updatedMenu });
   } catch (error) {
     console.error(error);
@@ -101,6 +104,7 @@ const deleteMenu = async (req, res) => {
     }
 
     await menuDao.deleteMenu(id);
+    await cache.del('cache:/menus*');
     res.json({ message: 'Menú eliminado correctamente' });
   } catch (error) {
     console.error(error);

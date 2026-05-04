@@ -1,4 +1,5 @@
 const { dishDao, menuDao } = require('../daos/factory');
+const cache = require('../utils/cache');
 
 const getDishesByMenu = async (req, res) => {
   try {
@@ -8,6 +9,7 @@ const getDishesByMenu = async (req, res) => {
       return res.status(404).json({ error: 'Menú no encontrado' });
     }
     const dishes = await dishDao.getDishesByMenuId(menuId);
+    await cache.set(`cache:/menus/${menuId}/dishes`, dishes, 60);
     res.json({ message: 'Platos obtenidos', dishes });
   } catch (error) {
     console.error(error);
@@ -52,6 +54,7 @@ const createDish = async (req, res) => {
     }
 
     const newDish = await dishDao.createDish(name, description, parseFloat(price), menuId);
+    await cache.del('cache:/menus/*/dishes*');
     res.status(201).json({ message: 'Plato creado', dish: newDish });
   } catch (error) {
     console.error(error);
@@ -85,6 +88,7 @@ const updateDish = async (req, res) => {
     }
 
     const updatedDish = await dishDao.updateDish(id, fields);
+    await cache.del('cache:/menus/*/dishes*');
     res.json({ message: 'Plato actualizado', dish: updatedDish });
   } catch (error) {
     console.error(error);
@@ -107,6 +111,7 @@ const deleteDish = async (req, res) => {
     }
 
     await dishDao.deleteDish(id);
+    await cache.del('cache:/menus/*/dishes*');
     res.json({ message: 'Plato eliminado correctamente' });
   } catch (error) {
     console.error(error);
