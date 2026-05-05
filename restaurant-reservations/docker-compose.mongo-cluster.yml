@@ -13,10 +13,13 @@ services:
       - JWT_SECRET=jwt_secret
       - RESTAURANT_SETUP_KEY=clave_restaurant_setup
       - REDIS_URL=redis://redis:6379
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
     depends_on:
       mongos:
         condition: service_healthy
       redis:
+        condition: service_started
+      elasticsearch:
         condition: service_started
     volumes:
       - ./:/app
@@ -71,6 +74,20 @@ services:
       - mongo-cluster
     restart: unless-stopped
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.4
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - mongo-cluster
+    restart: unless-stopped
+
   shard1c:
     image: mongo:7
     command: mongod --shardsvr --replSet shard1rs --port 27017 --bind_ip_all
@@ -111,3 +128,4 @@ volumes:
   shard1a:
   shard1b:
   shard1c:
+  elasticsearch_data:
