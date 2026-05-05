@@ -25,5 +25,6 @@ app.use('/menus', menuRoutes);
 app.use('/menus/:menuId/dishes', dishRoutes); // Rutas de platos anidadas bajo menús
 app.use('/reservations', reservationRoutes);
 app.use('/orders', orderRoutes);
-module.exports = app;
 app.use("/search", searchRoutes);
+
+module.exports = app;
