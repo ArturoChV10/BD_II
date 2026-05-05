@@ -3,8 +3,8 @@ version: "3.8"
 services:
   api:
     build: .
-    ports:
-      - "3000:3000"
+    #ports:
+     # - "3000:3000"
     environment:
       - PORT=3000
       - DATABASE_TYPE=mongodb
@@ -114,6 +114,17 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    networks:
+      - mongo-cluster
+  
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api
     networks:
       - mongo-cluster
 
