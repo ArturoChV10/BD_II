@@ -7,6 +7,7 @@ const menuRoutes = require('./routes/menuRoutes');
 const dishRoutes = require('./routes/dishRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const searchRoutes = require("./routes/searchRoutes");
 
 dotenv.config();
 
@@ -25,3 +26,4 @@ app.use('/menus/:menuId/dishes', dishRoutes); // Rutas de platos anidadas bajo m
 app.use('/reservations', reservationRoutes);
 app.use('/orders', orderRoutes);
 module.exports = app;
+app.use("/search", searchRoutes);
