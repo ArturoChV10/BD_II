@@ -34,6 +34,9 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
+      - name: Ejecutar pruebas automatizadas
+        run: npm test -- --runInBand
+
       - name: Validar carga de la API con PostgreSQL
         run: node -e "require('./src/app'); console.log('API carga correctamente con PostgreSQL')"
 
