@@ -57,23 +57,13 @@ services:
     depends_on:
       - postgres
 
-  superset:
-    image: apache/superset:latest
-    container_name: proyecto_olap-superset-1
+  metabase:
+    image: metabase/metabase:latest
+    container_name: proyecto_olap-metabase-1
     ports:
-      - "8088:8088"
-    environment:
-      SUPERSET_SECRET_KEY: 'mysecretkey123'
-      SUPERSET_ADMIN_USERNAME: admin
-      SUPERSET_ADMIN_PASSWORD: admin
-      SUPERSET_ADMIN_EMAIL: admin@example.com
-    command: >
-      sh -c "
-        superset db upgrade &&
-        superset fab create-admin --username $$SUPERSET_ADMIN_USERNAME --password $$SUPERSET_ADMIN_PASSWORD --firstname Admin --lastname User --email $$SUPERSET_ADMIN_EMAIL &&
-        superset init &&
-        superset run -p 8088 --with-threads --reload --debugger
-      "
+      - "3000:3000"
+    depends_on:
+      - postgres
 
   airflow:
     image: apache/airflow:2.8.1
