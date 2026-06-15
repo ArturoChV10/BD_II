@@ -1,7 +1,9 @@
+version: '3.8'
+
 services:
-  # Base de datos fuente (PostgreSQL, también puede ser MongoDB)
   postgres:
     image: postgres:15
+    container_name: proyecto_olap-postgres-1
     environment:
       POSTGRES_DB: restaurantes
       POSTGRES_USER: admin
@@ -11,80 +13,80 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Neo4j
   neo4j:
     image: neo4j:5-community
+    container_name: proyecto_olap-neo4j-1
     environment:
       NEO4J_AUTH: neo4j/test1234
     ports:
-      - "7474:7474"  # interfaz web
-      - "7687:7687"  # Bolt
+      - "7474:7474"
+      - "7687:7687"
 
-  # Elasticsearch
   elasticsearch:
     image: elasticsearch:8.10.2
+    container_name: proyecto_olap-elasticsearch-1
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
     ports:
       - "9200:9200"
 
-  # Superset (visualización)
-  superset:
-    image: apache/superset:4.0.2
-    environment:
-      SUPERSET_SECRET_KEY: 'secret_key'
-    ports:
-      - "8088:8088"
-    command: >
-      sh -c "superset fab create-admin &&
-             superset init &&
-             superset run -p 8088 --with-threads --reload --debugger"
-    # usuario por defecto: admin / admin
-
-  # Spark Master + Worker (spark standalone)
   spark-master:
     image: apache/spark:3.5.3
+    container_name: proyecto_olap-spark-master-1
+    environment:
+      - SPARK_MODE=master
     ports:
-      - "8081:8080"
+      - "8080:8080"
       - "7077:7077"
-    command: >
-      /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+
   spark-worker:
     image: apache/spark:3.5.3
-    command: >
-      /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    container_name: proyecto_olap-spark-worker-1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    depends_on:
+      - spark-master
 
-  # Hive (requiere Hadoop, usamos imagen de apache/hive standalone)
   hive-server:
     image: apache/hive:4.0.0
+    container_name: proyecto_olap-hive-server-1
     ports:
-      - "10000:10000"  # puerto JDBC/Thrift
-    environment:
-      - SERVICE_NAME=hiveserver2
+      - "10000:10000"
     depends_on:
-      - postgres  # metastore usa postgres
-    volumes:
-      - hive_data:/opt/hive/data
+      - postgres
 
-  # Airflow (con CeleryExecutor opcional, usamos LocalExecutor para simplificar)
+  superset:
+    image: apache/superset:latest
+    container_name: proyecto_olap-superset-1
+    ports:
+      - "8088:8088"
+    environment:
+      SUPERSET_SECRET_KEY: 'mysecretkey123'
+      SUPERSET_ADMIN_USERNAME: admin
+      SUPERSET_ADMIN_PASSWORD: admin
+      SUPERSET_ADMIN_EMAIL: admin@example.com
+    command: >
+      sh -c "
+        superset db upgrade &&
+        superset fab create-admin --username $$SUPERSET_ADMIN_USERNAME --password $$SUPERSET_ADMIN_PASSWORD --firstname Admin --lastname User --email $$SUPERSET_ADMIN_EMAIL &&
+        superset init &&
+        superset run -p 8088 --with-threads --reload --debugger
+      "
+
   airflow:
     image: apache/airflow:2.8.1
+    container_name: proyecto_olap-airflow-1
     environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:admin123@postgres/airflow
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
     ports:
       - "8080:8080"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
-    command: >
-      sh -c "airflow db init &&
-             airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
-             airflow webserver & airflow scheduler"
-    depends_on:
-      - postgres
+    command: airflow standalone
+
 
 volumes:
   postgres_data:
-  hive_data:
