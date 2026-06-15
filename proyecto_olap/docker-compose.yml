@@ -75,6 +75,7 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
+      - ./:/opt/airflow/proyecto_olap
     command: airflow standalone
 
 
