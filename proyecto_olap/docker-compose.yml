@@ -1,5 +1,3 @@
-#version: '3.8'
-
 services:
   postgres:
     image: postgres:15
@@ -65,7 +63,7 @@ services:
     depends_on:
       - postgres
 
-   airflow:
+  airflow:
     build:
       context: .
       dockerfile: docker/airflow/Dockerfile
