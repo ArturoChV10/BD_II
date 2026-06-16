@@ -65,10 +65,11 @@ services:
     depends_on:
       - postgres
 
-  airflow:
+   airflow:
     build:
       context: .
       dockerfile: docker/airflow/Dockerfile
+    image: proyecto_olap_airflow_pyspark:latest
     container_name: proyecto_olap-airflow-1
     environment:
       - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
@@ -94,7 +95,6 @@ services:
       - neo4j
       - elasticsearch
     command: airflow standalone
-
 
 volumes:
   postgres_data:
