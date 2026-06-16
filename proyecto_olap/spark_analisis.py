@@ -1,16 +1,26 @@
 # spark_analisis.py
+import os
+
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, count, month, hour, date_format, sum as spark_sum, lag, row_number
+from pyspark.sql.functions import col, count, month, hour, lag, row_number
 from pyspark.sql.window import Window
+
+JDBC_DRIVER_PATH = os.getenv(
+    "POSTGRES_JDBC_JAR",
+    "/opt/airflow/proyecto_olap/drivers/postgresql-42.7.3.jar"
+)
+
+jdbc_url = os.getenv(
+    "SPARK_JDBC_URL",
+    "jdbc:postgresql://postgres:5432/restaurantes"
+)
 
 # Crear sesión Spark
 spark = SparkSession.builder \
     .appName("AnalisisRestaurantes") \
-    .config("spark.jars", "drivers/postgresql-42.7.3.jar") \
+    .config("spark.jars", JDBC_DRIVER_PATH) \
     .getOrCreate()
 
-# Configuración de conexión a PostgreSQL
-jdbc_url = "jdbc:postgresql://host.docker.internal:5432/restaurantes"
 properties = {
     "user": "admin",
     "password": "admin123",
